@@ -2,6 +2,8 @@
 #ifndef CANVAS_IMAGE_HPP
 #define CANVAS_IMAGE_HPP
 
+#include <utility/mapped_memory.hpp>
+
 #include <boost/tuple/tuple.hpp>
 
 #include <boost/scoped_array.hpp>
@@ -9,14 +11,15 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Bbox_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Point_2.h>
 
 #include <gdal_priv.h>
 
 #include <cstdlib>
 #include <string>
+#include <vector>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 

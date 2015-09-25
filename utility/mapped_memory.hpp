@@ -128,13 +128,6 @@ namespace utility {
         void* mem = mmap64( 0, file_size, PROT_READ | PROT_WRITE,
                                           MAP_SHARED | MAP_NORESERVE, fd_, 0 );
 
-        /*
-        if( mem == MAP_FAILED ) {
-
-          std::cerr << "Error mapping memory: " << strerror( errno ) << std::endl;
-        }
-        */
-
         BOOST_ASSERT( mem != MAP_FAILED );
         ptr_ = static_cast<num_type*>( mem );
 

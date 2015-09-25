@@ -1,8 +1,6 @@
 
 #include <canvas/image16.hpp>
 
-#include <boost/numeric/ublas/matrix.hpp>
-
 #include <boost/assert.hpp>
 
 namespace canvas {

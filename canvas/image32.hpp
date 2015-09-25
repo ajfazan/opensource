@@ -4,10 +4,6 @@
 
 #include <canvas/image.hpp>
 
-#include <utility/mapped_memory.hpp>
-
-#include <vector>
-
 namespace canvas {
 
   class image32 : public image {

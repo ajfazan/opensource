@@ -112,8 +112,35 @@ namespace canvas {
                                            2, 2, GDT_Float32, 0, 0 );
 
         float nd( static_cast<float>( get_nodata( k ) ) );
+        size_t nd_count( std::count( buffer, buffer + 4, nd ) );
 
-        if( std::count( buffer, buffer + 4, nd ) == 0 ) {
+        if( ( nd_count > 0 ) && ( nd_count < 4 ) ) {
+
+          double du( std::ceil( x ) - x );
+          double dv( std::ceil( y ) - y );
+
+          dx *= dx;
+          dy *= dy;
+
+          du *= du;
+          dv *= dv;
+
+          double w[] = { dx + dy, du + dy, dx + dv, du + dv };
+
+          double swg( 0.0 ), sw ( 0.0 );
+
+          for( size_t t = 0; t < 4; ++t, ++buffer, ++w ) {
+
+            if( *buffer != nd ) {
+
+              swg += *w * static_cast<double>( *buffer );
+              sw  += *w;
+            }
+          }
+
+          *g_ptr = static_cast<float>( swg / sw );
+
+        } else {
 
           double ga( dx * buffer[1] + cdx * buffer[0] );
           double gb( dx * buffer[3] + cdx * buffer[2] );
