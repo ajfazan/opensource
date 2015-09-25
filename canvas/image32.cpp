@@ -129,12 +129,15 @@ namespace canvas {
 
           double swg( 0.0 ), sw ( 0.0 );
 
-          for( size_t t = 0; t < 4; ++t, ++buffer, ++w ) {
+          const float* b_ptr( buffer );
+          const double* w_ptr( w );
 
-            if( *buffer != nd ) {
+          for( size_t t = 0; t < 4; ++t, ++b_ptr, ++w_ptr ) {
 
-              swg += *w * static_cast<double>( *buffer );
-              sw  += *w;
+            if( *b_ptr != nd ) {
+
+              swg += *w_ptr * static_cast<double>( *b_ptr );
+              sw  += *w_ptr;
             }
           }
 

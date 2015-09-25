@@ -5,7 +5,7 @@
 #include <boost/assert.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <ifstream>
+#include <fstream>
 #include <iterator>
 
 namespace utility {
@@ -15,11 +15,14 @@ namespace utility {
     template <class container_type>
     boost::shared_ptr<container_type> load( const std::string& filename )
     {
+      typedef typename container_type::value_type data_type;
+
       std::ifstream in( filename.c_str() );
       BOOST_ASSERT( in.is_open() );
-      std::istream_iterator<container_type::value_type> begin( in ), end;
-      boost::shared_ptr<container_type> data( new container_type );
-      data->insert( begin, end );
+      std::istream_iterator<data_type> begin( in ), end;
+      boost::shared_ptr<container_type> data(
+        new container_type( begin, end )
+      );
       in.close();
       return data;
     }
