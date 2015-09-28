@@ -130,9 +130,9 @@ namespace canvas {
           && ( y <= bb.ymax() ) );
   }
 
-  bool image::intersects( const image::const_ptr& right ) const
+  bool image::intersects( const image& other ) const
   {
-    boost::shared_ptr<metadata> md( right->get_metadata() );
+    boost::shared_ptr<metadata> md( other.get_metadata() );
 
     if( md_ && md ) {
 

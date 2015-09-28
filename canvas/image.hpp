@@ -68,7 +68,7 @@ namespace canvas {
 
     bool contains( const Kernel::Point_2& p ) const;
 
-    bool intersects( const image::ptr& right ) const;
+    bool intersects( const image& other ) const;
 
     pixel compute_position( const Kernel::Point_2& p ) const;
 
