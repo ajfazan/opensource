@@ -140,7 +140,7 @@ namespace canvas {
       const CGAL::Bbox_2& bb2( md ->get<1>() );
 
       return (
-        ( md_->get<0>() == md->get<0>() ) && CGAL::do_intersect( bb1, bb2 )
+        ( md_->get<0>() == md->get<0>() ) && CGAL::do_overlap( bb1, bb2 )
       );
     }
 
