@@ -57,7 +57,7 @@ namespace canvas {
                          tmp[0] + pixel_size * columns_, tmp[3] );
         std::string proj_tag( dataset_->GetProjectionRef() );
 
-        metadata_.reset( new metadata( pixel_size, bb, proj_tag ) );
+        md_.reset( new metadata( pixel_size, bb, proj_tag ) );
       }
     }
   }
@@ -94,7 +94,7 @@ namespace canvas {
 
   boost::shared_ptr<image::metadata> image::get_metadata() const
   {
-    return metadata_;
+    return md_;
   }
 
   void image::display_info( const std::string& tag ) const
@@ -104,12 +104,12 @@ namespace canvas {
               << lines_ << " x " << columns_ << " x "
               << channels_ << std::endl;
 
-    if( metadata_ ) {
+    if( md_ ) {
 
-      std::cout << "Pixel size: "   << metadata_->get<0>() << std::endl;
+      std::cout << "Pixel size: "   << md_->get<0>() << std::endl;
       std::cout.precision( 4 );
       std::cout.flags( std::ios::fixed );
-      std::cout << "Bounding box: " << metadata_->get<1>() << std::endl;
+      std::cout << "Bounding box: " << md_->get<1>() << std::endl;
     }
 
     std::cout << std::endl;
@@ -117,12 +117,12 @@ namespace canvas {
 
   bool image::contains( const Kernel::Point_2& p ) const
   {
-    BOOST_ASSERT( metadata_ );
+    BOOST_ASSERT( md_ );
 
     const double& x( p.x() );
     const double& y( p.y() );
 
-    const CGAL::Bbox_2& bb( metadata_->get<1>() );
+    const CGAL::Bbox_2& bb( md_->get<1>() );
 
     return ( ( x >= bb.xmin() )
           && ( x <= bb.xmax() )
@@ -130,16 +130,33 @@ namespace canvas {
           && ( y <= bb.ymax() ) );
   }
 
+  bool image::intersects( const image::const_ptr& right ) const
+  {
+    boost::shared_ptr<metadata> md( right->get_metadata() );
+
+    if( md_ && md ) {
+
+      const CGAL::Bbox_2& bb1( md_->get<1>() );
+      const CGAL::Bbox_2& bb2( md ->get<1>() );
+
+      return (
+        ( md_->get<0>() == md->get<0>() ) && CGAL::do_intersect( bb1, bb2 )
+      );
+    }
+
+    return false;
+  }
+
   image::pixel image::compute_position( const Kernel::Point_2& p ) const
   {
-    BOOST_ASSERT( metadata_ );
+    BOOST_ASSERT( md_ );
 
     const double& x( p.x() );
     const double& y( p.y() );
 
-    const double& pixel_size( metadata_->get<0>() );
+    const double& pixel_size( md_->get<0>() );
 
-    const CGAL::Bbox_2& bb( metadata_->get<1>() );
+    const CGAL::Bbox_2& bb( md_->get<1>() );
 
     return pixel( ( x - bb.xmin() ) / pixel_size,
                   ( bb.ymax() - y ) / pixel_size );

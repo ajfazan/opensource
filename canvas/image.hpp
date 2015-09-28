@@ -68,6 +68,8 @@ namespace canvas {
 
     bool contains( const Kernel::Point_2& p ) const;
 
+    bool intersects( const image::ptr& right ) const;
+
     pixel compute_position( const Kernel::Point_2& p ) const;
 
     virtual boost::shared_array<double> compute_values(
@@ -84,7 +86,7 @@ namespace canvas {
 
     boost::scoped_array<double> nodata_;
 
-    boost::shared_ptr<metadata> metadata_;
+    boost::shared_ptr<metadata> md_;
 
     GDALDataset* dataset_;
 
