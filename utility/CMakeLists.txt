@@ -1,0 +1,9 @@
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8.3 )
+
+PROJECT( utility )
+
+SET( HEADERS algorithm.hpp mapped_memory.hpp )
+
+SET( CMAKE_INSTALL_PREFIX $ENV{WS_INSTALL} )
+
+INSTALL( FILES ${HEADERS} DESTINATION include/utility )
