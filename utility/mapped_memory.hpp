@@ -125,8 +125,8 @@ namespace utility {
         off_t file_size( bytes() );
         ftruncate( fd_, file_size );
 
-        void* mem = mmap64( 0, file_size, PROT_READ | PROT_WRITE,
-                                          MAP_SHARED | MAP_NORESERVE, fd_, 0 );
+        void* mem = mmap( 0, file_size, PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_NORESERVE, fd_, 0 );
 
         BOOST_ASSERT( mem != MAP_FAILED );
         ptr_ = static_cast<num_type*>( mem );
