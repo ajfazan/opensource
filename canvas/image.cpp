@@ -3,8 +3,6 @@
 
 #include <boost/assert.hpp>
 
-#include <CGAL/double.h>
-
 namespace canvas {
 
   image::image( const size_t& lines,
@@ -121,8 +119,8 @@ namespace canvas {
   {
     BOOST_ASSERT( md_ );
 
-    double x( CGAL::to_double( p.x() ) );
-    double y( CGAL::to_double( p.y() ) );
+    const double& x( p.x() );
+    const double& y( p.y() );
 
     const CGAL::Bbox_2& bb( md_->get<1>() );
 
@@ -153,8 +151,8 @@ namespace canvas {
   {
     BOOST_ASSERT( md_ );
 
-    double x( CGAL::to_double( p.x() ) );
-    double y( CGAL::to_double( p.y() ) );
+    const double& x( p.x() );
+    const double& y( p.y() );
 
     const double& pixel_size( md_->get<0>() );
 
