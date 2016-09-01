@@ -5,7 +5,9 @@
 #include <boost/assert.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <iterator>
 
 namespace utility {
@@ -25,6 +27,22 @@ namespace utility {
       );
       in.close();
       return data;
+    }
+
+    template <class container_type>
+    void write( const std::string& filename,
+                const container_type& container,
+                const std::ios_base::fmtflags& format,
+                const size_t& p = 6 )
+    {
+      typedef typename container_type::value_type data_type;
+
+      std::ofstream out( filename.c_str() );
+      out.flags( format );
+      out.precision( p );
+      std::ostream_iterator<data_type> out_it( out, "\n" );
+      std::copy( container.begin(), container.end(), out_it );
+      out.close();
     }
 
   }
