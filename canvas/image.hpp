@@ -18,6 +18,7 @@
 #include <gdal_priv.h>
 
 #include <cstdlib>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,8 @@ namespace canvas {
 
     bool is_valid( const pixel& px ) const;
 
+    virtual void write( const std::string& filename ) = 0;
+
   protected:
     size_t lines_;
 
@@ -89,6 +92,8 @@ namespace canvas {
     boost::shared_ptr<metadata> md_;
 
     GDALDataset* dataset_;
+
+    std::map<std::string,std::string> driver_;
 
   };
 

@@ -52,8 +52,10 @@ namespace canvas {
 
       BOOST_ASSERT( ( x_size * y_size ) == pixels );
 
-      b_handle->RasterIO( GF_Read, 0, 0, x_size, y_size, buffer,
-                                         x_size, y_size, GDT_UInt16, 0, 0 );
+      CPLErr e = b_handle->RasterIO( GF_Read,
+        0, 0, x_size, y_size, buffer, x_size, y_size, GDT_Byte, 0, 0 );
+
+      BOOST_ASSERT( e == CE_None );
 
       std::copy( buffer, buffer + pixels, ( *b_it )->get() );
     }
@@ -90,8 +92,10 @@ namespace canvas {
         GDALRasterBand* b_handle = dataset_->GetRasterBand( k );
 
         float buffer[4];
-        b_handle->RasterIO( GF_Read, j, i, 2, 2, buffer,
-                                           2, 2, GDT_Byte, 0, 0 );
+        CPLErr e = b_handle->RasterIO( GF_Read, j, i, 2, 2, buffer,
+                                       2, 2, GDT_Byte, 0, 0 );
+
+        BOOST_ASSERT( e == CE_None );
 
         float nd( static_cast<float>( get_nodata( k ) ) );
 

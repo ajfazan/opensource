@@ -14,6 +14,9 @@ namespace canvas {
     nodata_.reset( new double[channels_] );
     BOOST_ASSERT( nodata_ != 0 );
     std::fill_n( nodata_.get(), channels_, 0.0 );
+
+    driver_[".tif"] = "GTiff";
+    driver_[".img"] = "HFA";
   }
 
   image::image( const std::string& filename )
@@ -60,6 +63,10 @@ namespace canvas {
         md_.reset( new metadata( pixel_size, bb, proj_tag ) );
       }
     }
+
+    driver_[".tif"] = "GTiff";
+    driver_[".img"] = "HFA";
+
   }
 
   image::~image()

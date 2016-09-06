@@ -2,6 +2,7 @@
 #include <canvas/image32.hpp>
 
 #include <boost/assert.hpp>
+#include <boost/filesystem.hpp>
 
 namespace canvas {
 
@@ -48,8 +49,53 @@ namespace canvas {
 
       BOOST_ASSERT( ( x_size * y_size ) == pixels );
 
-      b_handle->RasterIO( GF_Read, 0, 0, x_size, y_size, ( *b_it )->get(),
-                                         x_size, y_size, GDT_Float32, 0, 0 );
+      CPLErr e = b_handle->RasterIO( GF_Read, 0, 0, x_size, y_size,
+        ( *b_it )->get(), x_size, y_size, GDT_Float32, 0, 0 );
+
+      BOOST_ASSERT( e == CE_None );
+    }
+  }
+
+  void image32::write( const std::string& filename )
+  {
+    if( dataset_ != NULL ) {
+
+      GDALClose( dataset_ );
+    }
+
+    CPLErr e;
+
+    boost::filesystem::path p( filename );
+    std::string ext( p.extension().string() );
+
+    GDALDriver* driver =
+      GetGDALDriverManager()->GetDriverByName( driver_[ext].c_str() );
+
+    dataset_ = driver->Create( filename.c_str(), columns_, lines_, channels_,
+                               GDT_Float32, NULL );
+
+    const CGAL::Bbox_2& bb( md_->get<1>() );
+    double transform[] = { bb.xmin(), md_->get<0>(), 0.0,
+                           bb.ymax(), 0.0, md_->get<0>() };
+
+    e = dataset_->SetGeoTransform( transform );
+    BOOST_ASSERT( e == CE_None );
+
+    e = dataset_->SetProjection( md_->get<2>().c_str() );
+    BOOST_ASSERT( e == CE_None );
+
+    std::vector<band_ptr>::const_iterator b_it = bands_.begin();
+
+    for( size_t k = 0; k < channels_; ++k, ++b_it ) {
+
+      GDALRasterBand* b_handle = dataset_->GetRasterBand( k + 1 );
+
+      b_handle->SetNoDataValue( nodata_[k] );
+
+      e = b_handle->RasterIO( GF_Write, 0, 0, columns_, lines_,
+            ( *b_it )->get(), columns_, lines_, GDT_Float32, 0, 0 );
+
+      BOOST_ASSERT( e == CE_None );
     }
   }
 
@@ -72,8 +118,11 @@ namespace canvas {
       GDALRasterBand* b_handle = dataset_->GetRasterBand( k + 1 );
 
       band_ptr b_ptr( region->get_band( k + 1 ) );
-      b_handle->RasterIO( GF_Read, c1, l1, columns, lines, b_ptr->get(),
-                                           columns, lines, GDT_Float32, 0, 0 );
+
+      CPLErr e = b_handle->RasterIO( GF_Read, c1, l1, columns, lines,
+        b_ptr->get(), columns, lines, GDT_Float32, 0, 0 );
+
+      BOOST_ASSERT( e == CE_None );
     }
 
     return region;
@@ -108,8 +157,10 @@ namespace canvas {
         GDALRasterBand* b_handle = dataset_->GetRasterBand( k );
 
         float buffer[4];
-        b_handle->RasterIO( GF_Read, j, i, 2, 2, buffer,
-                                           2, 2, GDT_Float32, 0, 0 );
+        CPLErr e = b_handle->RasterIO( GF_Read, j, i, 2, 2,
+                                       buffer, 2, 2, GDT_Float32, 0, 0 );
+
+        BOOST_ASSERT( e == CE_None );
 
         float nd( static_cast<float>( get_nodata( k ) ) );
         size_t nd_count( std::count( buffer, buffer + 4, nd ) );
@@ -176,7 +227,8 @@ namespace canvas {
       const CGAL::Bbox_2& o_bb( o_md->get<1>() );
 
       if( ( t_md->get<0>() == o_md->get<0>() ) &&
-            CGAL::do_overlap( t_bb, o_bb ) ) {
+            CGAL::do_overlap( t_bb, o_bb ) &&
+          ( t_md->get<2>() == o_md->get<2>() ) ) {
 
         std::vector<double> x;
         std::vector<double> y;

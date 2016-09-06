@@ -38,6 +38,8 @@ namespace canvas {
 
     image32::ptr load( size_t l1, size_t c1, size_t l2, size_t c2 ) const;
 
+    void write( const std::string& filename );
+
     boost::shared_array<double> compute_values( const pixel& px ) const;
 
     band_ptr get_band( size_t band_number ) const;
