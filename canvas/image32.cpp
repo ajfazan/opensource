@@ -21,15 +21,31 @@ namespace canvas {
   {
   }
 
-  void image32::allocate()
+  void image32::allocate( bool fill )
   {
-    if( bands_.empty() ) {
+    if( bands_.empty() || ( bands_.size() != channels_ ) ) {
 
       boost::uint64_t pixels( lines_ * columns_ );
 
-      for( size_t k = 0; k < channels_; ++k ) {
+      bands_.clear();
 
-        bands_.push_back( band_ptr( new band( pixels ) ) );
+      if( fill ) {
+
+        for( size_t k = 0; k < channels_; ++k ) {
+
+          band_ptr array( new band( pixels ) );
+          float* data_ptr( array->get() );
+          BOOST_ASSERT( data_ptr );
+          std::fill_n( data_ptr, pixels, 0.0 );
+          bands_.push_back( array );
+        }
+
+      } else {
+
+        for( size_t k = 0; k < channels_; ++k ) {
+
+          bands_.push_back( band_ptr( new band( pixels ) ) );
+        }
       }
     }
   }
@@ -54,6 +70,35 @@ namespace canvas {
 
       BOOST_ASSERT( e == CE_None );
     }
+  }
+
+  image32::ptr image32::load( size_t l1, size_t c1, size_t l2, size_t c2 ) const
+  {
+    BOOST_ASSERT( l1 < l2 );
+    BOOST_ASSERT( c1 < c2 );
+
+    size_t lines  ( l2 - l1 );
+    size_t columns( c2 - c1 );
+
+    BOOST_ASSERT( lines   <= lines_   );
+    BOOST_ASSERT( columns <= columns_ );
+
+    image32::ptr region( new image32( lines, columns, channels_ ) );
+    region->allocate();
+
+    for( size_t k = 0; k < channels_; ++k ) {
+
+      GDALRasterBand* b_handle = dataset_->GetRasterBand( k + 1 );
+
+      band_ptr b_ptr( region->get_band( k + 1 ) );
+
+      CPLErr e = b_handle->RasterIO( GF_Read, c1, l1, columns, lines,
+        b_ptr->get(), columns, lines, GDT_Float32, 0, 0 );
+
+      BOOST_ASSERT( e == CE_None );
+    }
+
+    return region;
   }
 
   void image32::write( const std::string& filename )
@@ -97,35 +142,6 @@ namespace canvas {
 
       BOOST_ASSERT( e == CE_None );
     }
-  }
-
-  image32::ptr image32::load( size_t l1, size_t c1, size_t l2, size_t c2 ) const
-  {
-    BOOST_ASSERT( l1 < l2 );
-    BOOST_ASSERT( c1 < c2 );
-
-    size_t lines  ( l2 - l1 );
-    size_t columns( c2 - c1 );
-
-    BOOST_ASSERT( lines   <= lines_   );
-    BOOST_ASSERT( columns <= columns_ );
-
-    image32::ptr region( new image32( lines, columns, channels_ ) );
-    region->allocate();
-
-    for( size_t k = 0; k < channels_; ++k ) {
-
-      GDALRasterBand* b_handle = dataset_->GetRasterBand( k + 1 );
-
-      band_ptr b_ptr( region->get_band( k + 1 ) );
-
-      CPLErr e = b_handle->RasterIO( GF_Read, c1, l1, columns, lines,
-        b_ptr->get(), columns, lines, GDT_Float32, 0, 0 );
-
-      BOOST_ASSERT( e == CE_None );
-    }
-
-    return region;
   }
 
   boost::shared_array<double> image32::compute_values( const pixel& px ) const
@@ -227,22 +243,19 @@ namespace canvas {
       const CGAL::Bbox_2& o_bb( o_md->get<1>() );
 
       if( ( t_md->get<0>() == o_md->get<0>() ) &&
-            CGAL::do_overlap( t_bb, o_bb ) &&
-          ( t_md->get<2>() == o_md->get<2>() ) ) {
+          ( t_md->get<2>() == o_md->get<2>() ) &&
+            CGAL::do_overlap( t_bb, o_bb ) ) {
 
-        std::vector<double> x;
-        std::vector<double> y;
+        double x[] = { t_bb.xmin(), t_bb.xmax(), o_bb.xmin(), o_bb.xmax() };
+        double y[] = { t_bb.ymin(), t_bb.ymax(), o_bb.ymin(), o_bb.ymax() };
 
-        x.reserve( 4 );
-        y.reserve( 4 );
+        std::sort( x, x + 4 );
+        std::sort( y, y + 4 );
 
-        std::sort( x.begin(), x.end() );
-        std::sort( y.begin(), y.end() );
+        CGAL::Bbox_2 i_bb( x[1], y[1], x[2], y[2] );
 
-        CGAL::Bbox_2 i_bb( x[0], y[0], x[1], y[1] );
-
-        Kernel::Point_2 ul( x[0], y[1] );
-        Kernel::Point_2 lr( x[1], y[0] );
+        Kernel::Point_2 ul( x[1], y[2] );
+        Kernel::Point_2 lr( x[2], y[1] );
 
         pixel t_ul( this->compute_position( ul ) );
         pixel t_lr( this->compute_position( lr ) );
@@ -271,7 +284,7 @@ namespace canvas {
         image32::ptr r2( other.load( o_l1, o_c1, o_l2, o_c2 ) );
 
         result.reset( new image32( lines, columns, channels_ ) );
-        result->allocate();
+        result->allocate( true );
 
         boost::uint64_t pixels( lines * columns );
 
@@ -293,8 +306,10 @@ namespace canvas {
                                                   ++r1_b_ptr,
                                                   ++r2_b_ptr, ++r_b_ptr ) {
 
-            *r_b_ptr = ( ( *r1_b_ptr != r1_nd ) &&
-                         ( *r2_b_ptr != r2_nd ) ) ? *r1_b_ptr - *r2_b_ptr : 0.0;
+            if( ( *r1_b_ptr != r1_nd ) && ( *r2_b_ptr != r2_nd ) ) {
+
+              *r_b_ptr = *r1_b_ptr - *r2_b_ptr;
+            }
           }
         }
       }

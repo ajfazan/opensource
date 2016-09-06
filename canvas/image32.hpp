@@ -32,7 +32,7 @@ namespace canvas {
 
     virtual ~image32();
 
-    void allocate();
+    void allocate( bool fill = false );
 
     void load();
 

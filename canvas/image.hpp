@@ -51,7 +51,7 @@ namespace canvas {
 
     virtual ~image();
 
-    virtual void allocate() = 0;
+    virtual void allocate( bool fill = false ) = 0;
 
     virtual void load() = 0;
 

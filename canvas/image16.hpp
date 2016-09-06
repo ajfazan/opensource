@@ -25,13 +25,19 @@ namespace canvas {
 
     virtual ~image16();
 
-    void allocate();
+    void allocate( bool fill = false );
 
     void load();
+
+    image16::ptr load( size_t l1, size_t c1, size_t l2, size_t c2 ) const;
+
+    void write( const std::string& filename );
 
     boost::shared_array<double> compute_values( const pixel& px ) const;
 
     band_ptr get_band( size_t band_number ) const;
+
+    image16::ptr compute_difference( const image16& other ) const;
 
   private:
     std::vector<band_ptr> bands_;
