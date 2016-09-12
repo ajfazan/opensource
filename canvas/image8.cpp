@@ -207,6 +207,34 @@ namespace canvas {
     return bands_[band_number - 1];
   }
 
+  image8::ptr image8::remove_additive_noise(
+    const std::vector<boost::uint8_t>& noise ) const
+  {
+    image8::ptr result;
+
+    BOOST_ASSERT( noise.size() == channels_ );
+
+    result.reset( new image8( lines_, columns_, channels_ ) );
+    result->allocate( true );
+
+    std::vector<boost::uint8_t>::const_iterator n_it = noise.begin();
+
+    size_t pixels( lines_ * columns_ );
+
+    for( size_t k = 1; k <= channels_; ++k, ++n_it ) {
+
+      const boost::uint8_t* in_ptr( this->get_band( k )->get() );
+
+      boost::uint8_t* out_ptr( result->get_band( k )->get() );
+
+      std::transform( in_ptr,
+                      in_ptr + pixels, out_ptr,
+                      predicate( *n_it, nodata_[k - 1] ) );
+    }
+
+    return result;
+  }
+
   image8::ptr image8::compute_difference( const image8& other ) const
   {
     image8::ptr result;

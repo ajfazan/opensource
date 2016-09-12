@@ -14,7 +14,6 @@ namespace canvas {
     nodata_.reset( new double[channels_] );
     BOOST_ASSERT( nodata_ != 0 );
     std::fill_n( nodata_.get(), channels_, 0.0 );
-
     driver_[".tif"] = "GTiff";
     driver_[".img"] = "HFA";
   }
@@ -99,6 +98,55 @@ namespace canvas {
     return nodata_[band_number - 1];
   }
 
+  image::pixel_type image::get_pixel_type( const std::string& filename )
+  {
+    boost::filesystem::path p( filename );
+
+    BOOST_ASSERT( p.is_file() );
+
+    try {
+
+      GDALAllRegister();
+
+      GDALDataset* dataset = ( GDALDataset* ) GDALOpen( filename.c_str(),
+                                                        GA_ReadOnly );
+
+      if( dataset == NULL ) {
+
+        std::cerr << "Unable to open image " << filename << std::endl;
+        return Undefined;
+      }
+
+      std::map<GDALDataType,pixel_type> type;
+
+      type[GDT_Byte] = Byte;
+      type[GDT_UInt16] = UInt16;
+      type[GDT_Float32] = Float32;
+
+      std::list<pixel_type> result;
+
+      int channels( dataset->GetRasterCount() );
+
+      for( size_t k = 1; k <= channels; ++k ) {
+
+        result.push_back(
+          type[dataset->GetRasterBand( k )->GetRasterDataType()]
+        );
+      }
+
+      result.sort();
+      result.unique();
+
+      return ( result.size() == 1 ) ? result.front() : Mixed;
+
+    } catch( ... ) {
+
+      std::cerr << "Unknown exception" << std::endl;
+    }
+
+    return Undefined;
+  }
+
   boost::shared_ptr<image::metadata> image::get_metadata() const
   {
     return md_;
@@ -147,7 +195,8 @@ namespace canvas {
       const CGAL::Bbox_2& bb2( md ->get<1>() );
 
       return (
-        ( md_->get<0>() == md->get<0>() ) && CGAL::do_overlap( bb1, bb2 )
+        ( md_->get<0>() == md->get<0>() ) &&
+        ( md_->get<2>() == md->get<2>() ) && CGAL::do_overlap( bb1, bb2 )
       );
     }
 

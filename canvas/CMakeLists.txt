@@ -1,7 +1,7 @@
 PROJECT( CANVAS )
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8.4 )
 
-SET( HEADERS image.hpp image8.cpp image16.hpp image32.hpp )
+SET( HEADERS image.hpp image8.hpp image16.hpp image32.hpp )
 SET( SOURCES image.cpp image8.cpp image16.cpp image32.cpp )
 
 SET( CMAKE_INSTALL_PREFIX $ENV{WS_INSTALL} )

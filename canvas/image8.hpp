@@ -37,10 +37,35 @@ namespace canvas {
 
     band_ptr get_band( size_t band_number ) const;
 
+    image8::ptr remove_additive_noise(
+      const std::vector<boost::uint8_t>& noise ) const;
+
     image8::ptr compute_difference( const image8& other ) const;
 
   private:
     std::vector<band_ptr> bands_;
+
+    class predicate {
+
+    public:
+      predicate( boost::uint8_t delta, boost::uint8_t nodata )
+        : delta_( delta ), nodata_( nodata )
+      {
+      }
+
+      boost::uint8_t operator()( const boost::uint8_t value )
+      {
+        return (
+          ( ( value > delta_ ) && ( value != nodata_ ) ) ? value - delta_ : 1
+        );
+      }
+
+    private:
+      boost::uint8_t delta_;
+
+      boost::uint8_t nodata_;
+
+    };
 
   };
 

@@ -29,6 +29,8 @@ namespace canvas {
   class image : private boost::noncopyable {
 
   public:
+    enum pixel_type { Byte=0, UInt16=1, Float32=3, Mixed=4, Undefined=5 };
+
     typedef boost::shared_ptr<image> ptr;
 
     typedef boost::shared_ptr<const image> const_ptr;
@@ -62,6 +64,8 @@ namespace canvas {
     const size_t& get_channels() const;
 
     const double& get_nodata( size_t band_number ) const;
+
+    static pixel_type get_pixel_type( const std::string& filename );
 
     boost::shared_ptr<metadata> get_metadata() const;
 
