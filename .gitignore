@@ -3,5 +3,5 @@ CMakeCache.txt
 Makefile
 *.cmake
 install_manifest.txt
-libcanvas*
-cygcanvas*
+lib*
+cyg*
